@@ -1,0 +1,74 @@
+ <!DOCTYPE html>
+ <html lang="en">
+
+<head>
+     <meta charset="UTF-8">
+     <title>MongoBofo!</title>
+     <meta name="description" content="DESCRIPTION">
+    <script src="https://unpkg.com/react@15.3.2/dist/react.js"></script>
+    <script src="https://unpkg.com/react-dom@15.3.2/dist/react-dom.js"></script>
+    <script src="https://cdnjs.cloudflare.com/ajax/libs/babel-core/5.8.23/browser.min.js"></script>
+    <script
+  src="https://code.jquery.com/jquery-3.2.1.min.js"
+  integrity="sha256-hwg4gsxgFZhOsEEamdOYGBf13FyQuiTwlAQgxVSNgt4="
+  crossorigin="anonymous"></script>
+    <style>
+        body {
+            font-style: san-serif;
+        }
+        .article {
+            border: 1px solid #999;
+        }
+    </style>
+ </head>
+
+ <body>
+    <div id="listing">
+
+    </div>
+ </body>
+<script type="text/babel" defer>
+
+    var Article = React.createClass( {
+        render: function() {
+            return (
+                <div className="article" key={this.props.article._id}>
+                    <p className="title">Title: {this.props.article.title}</p>
+                    <p className="url">URL: {this.props.article.link}</p>
+                    <p>_id: {this.props.article._id}</p>
+                    <button>Comment</button>
+                    <button>Delete article</button>
+                </div>
+            )
+        }
+    });
+
+    var Articles = React.createClass({
+        render: function() {
+            return ( <div>
+                    {this.props.articles.map(function(art, i) {
+                        return(
+                            <div key={i}>
+                                <Article article={art}/>
+                            </div>
+                        )
+                    })}
+                </div>
+            )
+        }
+    });
+
+    $.ajax( {
+        url: "http://localhost:3000/all",
+        method: "GET"
+    })
+    .done( function( data ) {
+        console.log( data );
+        ReactDOM.render(
+            <Articles articles={data}/>
+            ,document.getElementById('listing')
+        )
+    })
+
+</script>
+ </html>
