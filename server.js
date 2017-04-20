@@ -4,10 +4,12 @@ var path = require( "path" );
 // Dependencies
 var express = require("express");
 var mongojs = require("mongojs");
+var ObjectID = require("mongodb").ObjectID;
 // Require request and cheerio. This makes the scraping possible
 var request = require("request");
 var cheerio = require("cheerio");
 
+let commentId = 0;
 
 // Initialize Express
 var app = express();
@@ -29,6 +31,26 @@ app.get("/", function(req, res) {
   res.sendFile( path.join( __dirname, "./index.html" ));
 });
 
+app.get( "/comment/:id", function( req, res ) {
+    let id = req.params.id;
+    let commentText = "This is some text, for now."
+    console.log( "Commenting on article id: ", id );
+    db.scrapedData.update( { '_id': mongojs.ObjectId( id ) },
+                          {$push: { "comments": { "id": commentId++, "text": commentText }}},
+                    function(err, resp) {
+                        res.status(200).json( resp )
+                    });
+});
+
+app.get( "/remove/:id", function( req, res ) {
+    id = req.params.id;
+    console.log( "Removing article id :", id );
+    db.scrapedData.remove( { '_id': mongojs.ObjectId( id )},
+        function( err, resp ) {
+            res.redirect( "http://localhost:3000" );
+        });
+})
+
 // Retrieve data from the db
 app.get("/all", function(req, res) {
   // Find all results from the scrapedData collection in the db
@@ -40,12 +62,14 @@ app.get("/all", function(req, res) {
     // If there are no errors, send the data to the browser as a json
     else {
       res.json(found);
+      console.log( found );
     }
   });
 });
 
 // Scrape data from one site and place it into the mongodb db
 app.get("/scrape", function(req, res) {
+    var seq = 0;
   // Make a request for the news section of ycombinator
   request("https://news.ycombinator.com/", function(error, response, html) {
     // Load the html body from request into cheerio
@@ -63,6 +87,7 @@ app.get("/scrape", function(req, res) {
         db.scrapedData.save({
           title: title,
           link: link,
+          seq: seq++,
           comments: []
         },
         function(error, saved) {

@@ -12,18 +12,37 @@
   src="https://code.jquery.com/jquery-3.2.1.min.js"
   integrity="sha256-hwg4gsxgFZhOsEEamdOYGBf13FyQuiTwlAQgxVSNgt4="
   crossorigin="anonymous"></script>
+  <link rel="stylesheet" href="https://maxcdn.bootstrapcdn.com/bootstrap/3.3.7/css/bootstrap.min.css" integrity="sha384-BVYiiSIFeK1dGmJRAkycuHAHRg32OmUcww7on3RYdg4Va+PmSTsz/K68vbdEjh4u" crossorigin="anonymous">
+  <link rel="stylesheet" href="https://maxcdn.bootstrapcdn.com/bootstrap/3.3.7/css/bootstrap-theme.min.css" integrity="sha384-rHyoN1iRsVXV4nD0JutlnGaslCJuC7uwjduW9SVrLvRYooPp2bWYgmgJQIXwl/Sp" crossorigin="anonymous">
+  <script src="https://maxcdn.bootstrapcdn.com/bootstrap/3.3.7/js/bootstrap.min.js" integrity="sha384-Tc5IQib027qvyjSMfHjOMaLkfuWVxZxUPnCJA7l2mCWNIpG9mGCD8wGNIcPD7Txa" crossorigin="anonymous"></script>
     <style>
         body {
             font-style: san-serif;
+            background-color: #dddddd;
         }
         .article {
+            background-color: #E7E1EE;
             border: 1px solid #999;
+            border-radius: 10px;
+            max-width: 500px;
             padding: 10px 10px 10px 10px;
+            margin: 10px auto 10px auto;
+        }
+        .jumbotron {
+            text-align: center;
+            background-color: #7D5BA6;
+            color: #DDDDDD;
         }
     </style>
  </head>
 
  <body>
+    <div class="container-fluid">
+        <div class="jumbotron">
+            <h1>All the news that fit to report.</h1>
+            <h4>. . . and then some</h4>
+        </div>
+    </div>
     <div id="listing">
 
     </div>
@@ -36,8 +55,8 @@
                 <div key={this.props.article._id}>
                     <a href={this.props.article.link} target="_blank">{this.props.article.title}</a>
                     <div>
-                        <button className="comment" data-id={this.props.article._id}>Comment</button>
-                        <button className="remove"  data-id={this.props.article._id}>Delete article</button>
+                        <button className="comment btn btn-primary" data-id={this.props.article._id}>Comment</button>
+                        <button className="remove btn btn-danger"  data-id={this.props.article._id}>Delete article</button>
                     </div>
                 </div>
             )
@@ -74,10 +93,42 @@
     function setClicks() {
         $(".comment").on("click", function(e) {
             console.log( e.target );
+            const target = e.target;
+            const id = $(target).attr("data-id");
+            console.log( "Target ID = ", id );
+            $(".comment-form").remove();  // Remove any other comment-form divs first.
+            $("#" + id).append(`<div class="comment-form">
+                        <form>
+                          <div class="form-group">
+                            <label for="exampleInputEmail1">Email address</label>
+                            <input type="text" class="form-control" id="exampleInputEmail1" placeholder="Email">
+                          </div>
+                            <button class="btn btn-primary">Done</button>
+                            <button class="btn btn-danger btn-small">Delete</button>
+                        </form>
+                    </div>`);
+            $.ajax( {
+                url: "/comment/" + id,
+                method: "GET"
+            })
+            .done( function( resp ) {
+                console.log( resp );
+            });
         })
 
         $(".remove").on("click", function(e) {
             console.log( e.target );
+            const target = e.target;
+            const id = $(target).attr("data-id");
+            console.log( "Target ID = ", id );
+            $.ajax({
+                url: "/remove/" + id,
+                method: "GET"
+            })
+            .done( function( resp ) {
+                console.log( resp );
+                $("#" + id).remove();
+            })
         })
     }
 </script>
