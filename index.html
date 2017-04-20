@@ -89,7 +89,7 @@
     });
 
     $.ajax( {
-        url: "http://localhost:3000/all",
+        url: "/all",
         method: "GET"
     })
     .done( function( data ) {
@@ -103,7 +103,7 @@
 
     function refreshData() {
         $.ajax( {
-            url: "http://localhost:3000/all",
+            url: "/all",
             method: "GET"
         })
         .done( function( data ) {
