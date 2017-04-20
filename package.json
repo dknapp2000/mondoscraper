@@ -17,9 +17,10 @@
     "url": "https://github.com/dknapp2000/mondoscraper/issues"
   },
   "dependencies": {
-      "cheerio": "^0.20.0",
-      "express": "^4.13.4",
-      "mongojs": "^2.3.0",
-      "request": "^2.69.0"
+    "body-parser": "^1.17.1",
+    "cheerio": "^0.20.0",
+    "express": "^4.13.4",
+    "mongojs": "^2.3.0",
+    "request": "^2.69.0"
   }
 }

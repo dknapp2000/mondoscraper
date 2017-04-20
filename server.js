@@ -8,6 +8,7 @@ var ObjectID = require("mongodb").ObjectID;
 // Require request and cheerio. This makes the scraping possible
 var request = require("request");
 var cheerio = require("cheerio");
+var bodyParser = require( "body-parser" );
 
 let commentId = 0;
 
@@ -24,6 +25,10 @@ db.on("error", function(error) {
   console.log("Database Error:", error);
 });
 
+app.use(bodyParser.json());
+app.use(bodyParser.urlencoded({ extended: true }));
+app.use(bodyParser.text());
+app.use(bodyParser.json({ type: "application/vnd.api+json" }));
 
 // Main route (simple Hello World Message)
 app.get("/", function(req, res) {
@@ -31,15 +36,27 @@ app.get("/", function(req, res) {
   res.sendFile( path.join( __dirname, "./index.html" ));
 });
 
-app.get( "/comment/:id", function( req, res ) {
+app.post( "/comment/:id", function( req, res ) {
     let id = req.params.id;
-    let commentText = "This is some text, for now."
+    console.log( req.body );
+    let commentText = req.body.text;
     console.log( "Commenting on article id: ", id );
-    db.scrapedData.update( { '_id': mongojs.ObjectId( id ) },
-                          {$push: { "comments": { "id": commentId++, "text": commentText }}},
-                    function(err, resp) {
-                        res.status(200).json( resp )
-                    });
+
+    db.scrapedData.update(  { '_id': mongojs.ObjectId( id ) },
+                            { $set: { "comment": commentText }},
+                            function(err, resp) {
+                                res.status(200).json( resp )
+                            });
+});
+
+app.delete( "/uncomment/:id", function( req, res ) {
+    let id = req.params.id;
+    console.log( "Removing comment for id = " + id );
+    db.scrapedData.update(  { '_id': mongojs.ObjectId( id ) },
+                            { $set: { "comment": "" }},
+                            function(err, resp) {
+                                res.status(200).json( resp )
+                            });
 });
 
 app.get( "/remove/:id", function( req, res ) {
@@ -62,7 +79,7 @@ app.get("/all", function(req, res) {
     // If there are no errors, send the data to the browser as a json
     else {
       res.json(found);
-      console.log( found );
+      //console.log( found );
     }
   });
 });

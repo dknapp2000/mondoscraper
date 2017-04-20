@@ -26,12 +26,21 @@
             border-radius: 10px;
             max-width: 500px;
             padding: 10px 10px 10px 10px;
-            margin: 10px auto 10px auto;
+            margin: 5px auto 5px auto;
         }
         .jumbotron {
             text-align: center;
             background-color: #7D5BA6;
             color: #DDDDDD;
+        }
+        .top-level-buttons {
+            margin: 10px 0px 10px 0px;
+        }
+        .comment-form {
+            border: 1px solid #999;
+            border-radius: 10px;
+            padding: 10px 10px 10px 10px;
+
         }
     </style>
  </head>
@@ -48,13 +57,14 @@
     </div>
  </body>
 <script type="text/babel" defer>
+    let articles;
 
     var Article = React.createClass( {
         render: function() {
             return (
                 <div key={this.props.article._id}>
                     <a href={this.props.article.link} target="_blank">{this.props.article.title}</a>
-                    <div>
+                    <div className="top-level-buttons">
                         <button className="comment btn btn-primary" data-id={this.props.article._id}>Comment</button>
                         <button className="remove btn btn-danger"  data-id={this.props.article._id}>Delete article</button>
                     </div>
@@ -83,6 +93,7 @@
         method: "GET"
     })
     .done( function( data ) {
+        articles = data;
         ReactDOM.render(
             <Articles articles={data}/>
             ,document.getElementById('listing')
@@ -90,30 +101,81 @@
         setClicks();
     })
 
+    function refreshData() {
+        $.ajax( {
+            url: "http://localhost:3000/all",
+            method: "GET"
+        })
+        .done( function( data ) {
+            articles = data;
+            console.log( JSON.stringify( articles, null, 2 ) );
+        })
+    };
+
     function setClicks() {
         $(".comment").on("click", function(e) {
             console.log( e.target );
             const target = e.target;
             const id = $(target).attr("data-id");
             console.log( "Target ID = ", id );
+            const article = articles.find( a => { return a._id === id });
+            console.log( article );
+            const oldComment = article.comment;
+            console.log( "oldComment = ", oldComment );
+
             $(".comment-form").remove();  // Remove any other comment-form divs first.
+
             $("#" + id).append(`<div class="comment-form">
                         <form>
                           <div class="form-group">
-                            <label for="exampleInputEmail1">Email address</label>
-                            <input type="text" class="form-control" id="exampleInputEmail1" placeholder="Email">
+                            <label for="exampleInputEmail1">You comments are welcome!</label>
+                            <input type="text" class="form-control" id="comment-text">
                           </div>
-                            <button class="btn btn-primary">Done</button>
-                            <button class="btn btn-danger btn-small">Delete</button>
+                            <button id="comment-done" class="btn btn-primary">Done</button>
+                            <button id="comment-delete" class="btn btn-danger btn-small">Delete</button>
                         </form>
                     </div>`);
-            $.ajax( {
-                url: "/comment/" + id,
-                method: "GET"
-            })
-            .done( function( resp ) {
-                console.log( resp );
+
+            $("#comment-text")[0].value = oldComment || "";
+
+            $("#comment-delete").on("click", function(e) {
+                e.preventDefault();
+                const target = e.target;
+                console.log( "Deleting comment for id = ", id );
+                $.ajax( {
+                    url: "/uncomment/" + id,
+                    method: "DELETE"
+                })
+                .done( function( resp ) {
+                    console.log( resp );
+                    refreshData();
+                    $(".comment-form").remove();  // Remove any other comment-form divs first.
+                });
             });
+
+            $("#comment-done").on("click", function(e) {
+                e.preventDefault();
+                const target = e.target;
+                const comment = $("#comment-text")[0].value;
+                if ( comment === "" ) {
+                    $(".comment-form").remove();
+                    return;
+                }
+                console.log( "Comment = " + comment );
+
+                $.ajax( {
+                    url: "/comment/" + id,
+                    method: "POST",
+                    data: { "text": comment }
+                })
+                .done( function( resp ) {
+                    console.log( resp );
+                    refreshData();
+                    $(".comment-form").remove();  // Remove any other comment-form divs first.
+                });
+            })
+            e.preventDefault();
+
         })
 
         $(".remove").on("click", function(e) {
