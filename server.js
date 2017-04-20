@@ -10,6 +10,8 @@ var request = require("request");
 var cheerio = require("cheerio");
 var bodyParser = require( "body-parser" );
 
+const port = process.env.PORT || 3000;
+
 let commentId = 0;
 
 // Initialize Express
@@ -129,8 +131,6 @@ app.get("/scrape", function(req, res) {
   res.send("Scrape Complete");
 });
 
-
-// Listen on port 3000
-app.listen(3000, function() {
+app.listen(port, function() {
   console.log("App running on port 3000!");
 });
