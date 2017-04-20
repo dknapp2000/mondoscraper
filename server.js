@@ -14,9 +14,11 @@ let commentId = 0;
 
 // Initialize Express
 var app = express();
+// mongodb://dknapp:mongo@ds111441.mlab.com:11441/heroku_x3lz038m
 
 // Database configuration
 var databaseUrl = "scraper";
+var databaseUrl = 'mongodb://dknapp:mongo@ds111441.mlab.com:11441/heroku_x3lz038m';
 var collections = ["scrapedData"];
 
 // Hook mongojs configuration to the db variable
